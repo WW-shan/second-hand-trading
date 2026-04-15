@@ -47,7 +47,8 @@ if [[ ${#DOMAIN_ARGS[@]} -eq 0 ]]; then
 fi
 
 echo "Starting HTTP stack for ACME challenge..."
-docker compose up -d mysql server web
+docker compose up -d mysql server
+docker compose up -d --force-recreate web
 
 PROBE_TOKEN="acme-probe-$(date +%s)"
 PROBE_FILE="deploy/certbot/www/.well-known/acme-challenge/${PROBE_TOKEN}"
