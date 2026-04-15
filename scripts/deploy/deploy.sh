@@ -17,7 +17,15 @@ if grep -q "change-me-root-password" .env || grep -q "change-me-app-password" .e
 fi
 
 docker compose build
-docker compose up -d
+if ! docker compose up -d; then
+  echo
+  echo "Deployment failed. Recent MySQL logs:"
+  docker compose logs --tail=120 mysql || true
+  echo
+  echo "If this is a broken first-time init, try:"
+  echo "  bash scripts/deploy/reset-demo-data.sh"
+  exit 1
+fi
 
 echo
 echo "Deployment started."

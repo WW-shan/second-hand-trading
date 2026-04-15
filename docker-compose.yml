@@ -17,10 +17,11 @@ services:
       - ./deploy-data/mysql:/var/lib/mysql
       - ./second_hand_trading.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      test: ["CMD-SHELL", "export MYSQL_PWD=\"$${MYSQL_ROOT_PASSWORD}\"; mysqladmin ping -h 127.0.0.1 -uroot --silent"]
+      start_period: 45s
       interval: 10s
       timeout: 5s
-      retries: 12
+      retries: 20
 
   server:
     build:
@@ -55,4 +56,3 @@ services:
       - server
     ports:
       - "${HTTP_PORT:-80}:80"
-

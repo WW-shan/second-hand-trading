@@ -26,7 +26,15 @@ if ! grep -q '^PUBLIC_BASE_URL=https://' .env; then
 fi
 
 docker compose -f docker-compose.yml -f docker-compose.https.yml build
-docker compose -f docker-compose.yml -f docker-compose.https.yml up -d
+if ! docker compose -f docker-compose.yml -f docker-compose.https.yml up -d; then
+  echo
+  echo "HTTPS deployment failed. Recent MySQL logs:"
+  docker compose -f docker-compose.yml -f docker-compose.https.yml logs --tail=120 mysql || true
+  echo
+  echo "If this is a broken first-time init, try:"
+  echo "  bash scripts/deploy/reset-demo-data.sh"
+  exit 1
+fi
 
 echo
 echo "HTTPS deployment started."
