@@ -54,20 +54,35 @@ PROBE_TOKEN="acme-probe-$(date +%s)"
 PROBE_FILE="deploy/certbot/www/.well-known/acme-challenge/${PROBE_TOKEN}"
 printf '%s' "${PROBE_TOKEN}" > "${PROBE_FILE}"
 
-echo "Checking ACME challenge path before requesting certificate..."
-PROBE_RESPONSE="$(curl -fsSL --max-time 15 "http://${DOMAIN_NAME}/.well-known/acme-challenge/${PROBE_TOKEN}" || true)"
-if [[ "${PROBE_RESPONSE}" != "${PROBE_TOKEN}" ]]; then
-  echo "ACME preflight failed."
+echo "Checking ACME challenge path inside local nginx..."
+LOCAL_PROBE_RESPONSE="$(curl -fsSL --max-time 15 -H "Host: ${DOMAIN_NAME}" "http://127.0.0.1/.well-known/acme-challenge/${PROBE_TOKEN}" || true)"
+if [[ "${LOCAL_PROBE_RESPONSE}" != "${PROBE_TOKEN}" ]]; then
+  echo "Local ACME nginx preflight failed."
   echo "Expected challenge response '${PROBE_TOKEN}', got:"
-  printf '%s\n' "${PROBE_RESPONSE}"
+  printf '%s\n' "${LOCAL_PROBE_RESPONSE}"
   echo
   echo "Check:"
-  echo "  1) domain DNS points to this server"
-  echo "  2) port 80 is open"
-  echo "  3) nginx is serving /.well-known/acme-challenge/ from deploy/certbot/www"
+  echo "  1) nginx in the web container is serving /.well-known/acme-challenge/"
+  echo "  2) deploy/certbot/www is mounted into the web container"
   rm -f "${PROBE_FILE}"
   exit 1
 fi
+
+echo "Checking ACME challenge path through public DNS (IPv4)..."
+PUBLIC_PROBE_RESPONSE="$(curl -4 -fsSL --max-time 15 "http://${DOMAIN_NAME}/.well-known/acme-challenge/${PROBE_TOKEN}" || true)"
+if [[ "${PUBLIC_PROBE_RESPONSE}" != "${PROBE_TOKEN}" ]]; then
+  echo "Public ACME preflight failed."
+  echo "Expected challenge response '${PROBE_TOKEN}', got:"
+  printf '%s\n' "${PUBLIC_PROBE_RESPONSE}"
+  echo
+  echo "Check:"
+  echo "  1) domain DNS points to this server"
+  echo "  2) port 80 is open in your cloud firewall / security group"
+  echo "  3) no broken AAAA record is forcing IPv6 traffic elsewhere"
+  rm -f "${PROBE_FILE}"
+  exit 1
+fi
+
 rm -f "${PROBE_FILE}"
 
 echo "Requesting Let's Encrypt certificate for: ${DOMAINS_CSV}"
