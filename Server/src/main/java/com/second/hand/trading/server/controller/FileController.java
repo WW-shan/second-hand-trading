@@ -10,13 +10,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.net.URLConnection;
+import java.nio.file.Paths;
 
 /**
  * @author myl
@@ -52,17 +54,16 @@ public class FileController {
     @GetMapping("/image")
     public void getImage(@RequestParam("imageName") String imageName,
                          HttpServletResponse response) throws IOException {
-        File fileDir = new File(userFilePath);
-        File image=new File(fileDir.getAbsolutePath() +"/"+imageName);
+        File fileDir = Paths.get(userFilePath).toAbsolutePath().normalize().toFile();
+        File image = new File(fileDir, imageName);
         if (image.exists()){
-            FileInputStream fileInputStream=new FileInputStream(image);
-            byte[] bytes=new byte[fileInputStream.available()];
-            if (fileInputStream.read(bytes)>0){
-                OutputStream outputStream=response.getOutputStream();
-                outputStream.write(bytes);
-                outputStream.close();
+            String contentType = URLConnection.guessContentTypeFromName(image.getName());
+            if (contentType != null) {
+                response.setContentType(contentType);
             }
-            fileInputStream.close();
+            try (FileInputStream fileInputStream = new FileInputStream(image)) {
+                StreamUtils.copy(fileInputStream, response.getOutputStream());
+            }
         }
     }
 

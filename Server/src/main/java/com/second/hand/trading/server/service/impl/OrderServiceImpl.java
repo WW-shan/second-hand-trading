@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,6 +57,11 @@ public class OrderServiceImpl implements OrderService {
             lockMap.put(i,new ReentrantLock(true));
         }
     }
+    @PostConstruct
+    public void registerOrderTaskHandler() {
+        OrderTaskHandler.setOrderService(this);
+    }
+
     public boolean addOrder(OrderModel orderModel){
         IdleItemModel idleItemModel=idleItemDao.selectByPrimaryKey(orderModel.getIdleId());
         System.out.println(idleItemModel.getIdleStatus());

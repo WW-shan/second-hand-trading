@@ -1,235 +1,155 @@
 <template>
-    <div>
+    <div class="release-page">
         <app-head></app-head>
         <app-body>
-            <div class="release-idle-container">
-                <div class="release-idle-container-title">发布闲置</div>
-                <div class="release-idle-container-form">
-                    <el-input placeholder="请输入闲置名称" v-model="idleItemInfo.idleName"
-                              maxlength="30"
-                              show-word-limit>
-                    </el-input>
-                    <el-input
-                            class="release-idle-detiles-text"
-                            type="textarea"
-                            autosize
-                            placeholder="请输入闲置的详细介绍..."
-                            v-model="idleItemInfo.idleDetails"
-                            maxlength="1000"
-                            show-word-limit>
-                    </el-input>
-                    <div class="release-idle-place">
-                        <div class="release-tip">您的地区</div>
-                        <el-cascader
-                                :options="options"
-                                v-model="selectedOptions"
-                                @change="handleChange"
-                                :separator="' '"
-                                style="width: 90%;"
-                        >
-                        </el-cascader>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <div>
-                            <div class="release-tip">闲置类别</div>
-                            <el-select  v-model="idleItemInfo.idleLabel" placeholder="请选择类别">
-                                <el-option
-                                        v-for="item in options2"
-                                        :key="item.value"
-                                        :label="item.label"
-                                        :value="item.value">
-                                </el-option>
-                            </el-select>
-                        </div>
-                        <div style="width: 300px;">
-                            <el-input-number v-model="idleItemInfo.idlePrice" :precision="2" :step="10" :max="10000000">
-                                <div slot="prepend">价格</div>
-                            </el-input-number>
+            <section class="release-hero">
+                <div>
+                    <div class="page-kicker">Seller Studio</div>
+                    <h1>Launch a listing that looks worth buying.</h1>
+                    <p>Fast listing flow, cleaner hierarchy, and visual-first presentation designed to help products convert faster.</p>
+                </div>
+                <div class="release-side-note">Limit 10 images per listing - clean, sharp, fast.</div>
+            </section>
+
+            <section class="release-shell">
+                <div class="release-grid">
+                    <div class="release-main-card">
+                        <div class="release-card-title">Item Basics</div>
+                        <el-input placeholder="Enter item name" v-model="idleItemInfo.idleName" maxlength="30" show-word-limit></el-input>
+                        <el-input class="release-idle-detiles-text" type="textarea" autosize placeholder="Describe your item..." v-model="idleItemInfo.idleDetails" maxlength="1000" show-word-limit></el-input>
+
+                        <div class="release-row">
+                            <div class="release-field">
+                                <div class="release-tip">Your Region</div>
+                                <el-cascader :options="options" v-model="selectedOptions" @change="handleChange" :separator="' '" style="width: 100%;"></el-cascader>
+                            </div>
+                            <div class="release-field">
+                                <div class="release-tip">Category</div>
+                                <el-select v-model="idleItemInfo.idleLabel" placeholder="Select a category" style="width:100%">
+                                    <el-option v-for="item in options2" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                                </el-select>
+                            </div>
                         </div>
 
-                    </div>
-                    <div class="release-idle-container-picture">
-                        <div class="release-idle-container-picture-title">上传闲置照片</div>
-                        <el-upload
-                                action="http://localhost:8080/file/"
-                                :on-preview="fileHandlePreview"
-                                :on-remove="fileHandleRemove"
-                                :on-success="fileHandleSuccess"
-                                :show-file-list="showFileList"
-                                :limit="10"
-                                :on-exceed="handleExceed"
-                                accept="image/*"
-                                drag
-                                multiple>
-                            <i class="el-icon-upload"></i>
-                            <div class="el-upload__text">将图片拖到此处，或<em>点击上传</em></div>
-                        </el-upload>
-                        <div class="picture-list">
-                            <el-image style="width: 600px;margin-bottom: 2px;" fit="contain"
-                                      v-for="(img,index) in imgList" :src="img"
-                                      :preview-src-list="imgList"></el-image>
+                        <div class="release-field wide-price">
+                            <div class="release-tip">Ask Price</div>
+                            <el-input-number v-model="idleItemInfo.idlePrice" :precision="2" :step="10" :max="10000000"></el-input-number>
                         </div>
-                        <el-dialog :visible.sync="imgDialogVisible">
-                            <img width="100%" :src="dialogImageUrl" alt="">
-                        </el-dialog>
                     </div>
-                    <div style="display: flex;justify-content: center;margin-top: 30px;margin-bottom: 30px;">
-                        <el-button type="primary" plain @click="releaseButton">确认发布</el-button>
+
+                    <div class="release-side-card">
+                        <div class="release-card-title">Photo Dropzone</div>
+                        <el-upload :action="uploadUrl" :on-preview="fileHandlePreview" :on-remove="fileHandleRemove" :on-success="fileHandleSuccess" :show-file-list="showFileList" :limit="10" :on-exceed="handleExceed" accept="image/*" drag multiple>
+                            <i class="el-icon-upload"></i>
+                            <div class="el-upload__text">Drop images here, or <em>click to upload</em></div>
+                        </el-upload>
+                        <div class="release-preview-title">Preview Gallery</div>
+                        <div class="picture-list">
+                            <el-image v-for="(img,index) in imgList" :key="index" style="width: 100%;margin-bottom: 10px;" fit="cover" :src="img" :preview-src-list="imgList"></el-image>
+                        </div>
+                        <el-dialog :visible.sync="imgDialogVisible"><img width="100%" :src="dialogImageUrl" alt=""></el-dialog>
                     </div>
                 </div>
-            </div>
+
+                <div class="release-submit-row">
+                    <el-button type="primary" @click="releaseButton">Publish Item</el-button>
+                </div>
+            </section>
             <app-foot></app-foot>
         </app-body>
     </div>
 </template>
-
 <script>
-    import AppHead from '../common/AppHeader.vue';
-    import AppBody from '../common/AppPageBody.vue'
-    import AppFoot from '../common/AppFoot.vue'
-    import options from '../common/country-data.js'
-
-    export default {
-        name: "release",
-        components: {
-            AppHead,
-            AppBody,
-            AppFoot
+import AppHead from '../common/AppHeader.vue';
+import AppBody from '../common/AppPageBody.vue';
+import AppFoot from '../common/AppFoot.vue';
+import options from '../common/country-data.js';
+import { UPLOAD_URL } from '../../config';
+export default {
+    name: 'release',
+    components: { AppHead, AppBody, AppFoot },
+    data() {
+        return {
+            uploadUrl: UPLOAD_URL,
+            imgDialogVisible: false,
+            dialogImageUrl: '',
+            showFileList: true,
+            options,
+            selectedOptions: [],
+            options2: [
+                { value: 1, label: 'Digital' },
+                { value: 2, label: 'Appliances' },
+                { value: 3, label: 'Outdoor' },
+                { value: 4, label: 'Books' },
+                { value: 5, label: 'Other' }
+            ],
+            imgList: [],
+            idleItemInfo: { idleName: '', idleDetails: '', pictureList: '', idlePrice: 0, idlePlace: '', idleLabel: '' }
+        };
+    },
+    methods: {
+        handleChange(value) { this.idleItemInfo.idlePlace = value[1]; },
+        fileHandleRemove(file) {
+            for (let i = 0; i < this.imgList.length; i++) if (this.imgList[i] === file.response.data) this.imgList.splice(i, 1);
         },
-        data() {
-            return {
-                imgDialogVisible:false,
-                dialogImageUrl:'',
-                showFileList:true,
-                options:options,
-                selectedOptions:[],
-                options2: [{
-                    value: 1,
-                    label: '数码'
-                }, {
-                    value: 2,
-                    label: '家电'
-                }, {
-                    value: 3,
-                    label: '户外'
-                }, {
-                    value: 4,
-                    label: '图书'
-                }, {
-                    value: 5,
-                    label: '其他'
-                }],
-                imgList:[],
-                idleItemInfo:{
-                    idleName:'',
-                    idleDetails:'',
-                    pictureList:'',
-                    idlePrice:0,
-                    idlePlace:'',
-                    idleLabel:''
-                }
-            };
-        },
-        methods: {
-            handleChange(value) {
-                console.log(value);
-                this.idleItemInfo.idlePlace=value[1];
-            },
-            fileHandleRemove(file, fileList) {
-                console.log(file, fileList);
-                for(let i=0;i<this.imgList.length;i++){
-                    if(this.imgList[i]===file.response.data){
-                        this.imgList.splice(i,1);
+        fileHandlePreview(file) { this.dialogImageUrl = file.response.data; this.imgDialogVisible = true; },
+        fileHandleSuccess(response) { this.imgList.push(response.data); },
+        releaseButton() {
+            this.idleItemInfo.pictureList = JSON.stringify(this.imgList);
+            if (this.idleItemInfo.idleName && this.idleItemInfo.idleDetails && this.idleItemInfo.idlePlace && this.idleItemInfo.idleLabel && this.idleItemInfo.idlePrice) {
+                this.$api.addIdleItem(this.idleItemInfo).then(res => {
+                    if (res.status_code === 1) {
+                        this.$message({ message: 'Item published successfully!', type: 'success' });
+                        this.$router.replace({ path: '/details', query: { id: res.data.id } });
+                    } else {
+                        this.$message.error(`Failed to publish item! ${res.msg}`);
                     }
-                }
-            },
-            fileHandlePreview(file) {
-                console.log(file);
-                this.dialogImageUrl=file.response.data;
-                this.imgDialogVisible=true;
-            },
-            fileHandleSuccess(response, file, fileList){
-                console.log("file:",response,file,fileList);
-                this.imgList.push(response.data);
-            },
-            releaseButton(){
-                this.idleItemInfo.pictureList=JSON.stringify(this.imgList);
-                console.log(this.idleItemInfo);
-                if(this.idleItemInfo.idleName&&
-                    this.idleItemInfo.idleDetails&&
-                    this.idleItemInfo.idlePlace&&
-                    this.idleItemInfo.idleLabel&&
-                    this.idleItemInfo.idlePrice){
-                    this.$api.addIdleItem(this.idleItemInfo).then(res=>{
-                        if (res.status_code === 1) {
-                            this.$message({
-                                message: '发布成功！',
-                                type: 'success'
-                            });
-                            console.log(res.data);
-                            this.$router.replace({path: '/details', query: {id: res.data.id}});
-                        } else {
-                            this.$message.error('发布失败！'+res.msg);
-                        }
-                    }).catch(e=>{
-                        this.$message.error('请填写完整信息');
-                    })
-                }else {
-                    this.$message.error('请填写完整信息！');
-                }
-
-            },
-            handleExceed(files, fileList) {
-                this.$message.warning(`限制10张图片，本次选择了 ${files.length} 张图，共选择了 ${files.length + fileList.length} 张图`);
-            },
+                }).catch(() => this.$message.error('Please complete all required fields.'));
+            } else {
+                this.$message.error('Please complete all required fields!');
+            }
+        },
+        handleExceed(files, fileList) {
+            this.$message.warning(`Limit 10 images. You selected ${files.length} this time, ${files.length + fileList.length} in total.`);
         }
     }
+}
 </script>
-
 <style scoped>
-    .release-idle-container {
-        min-height: 85vh;
-    }
-
-    .release-idle-container-title {
-        font-size: 18px;
-        padding: 30px 0;
-        font-weight: 600;
-        width: 100%;
-        text-align: center;
-    }
-
-    .release-idle-container-form {
-        padding: 0 180px;
-    }
-
-    .release-idle-detiles-text {
-        margin: 20px 0;
-    }
-    .release-idle-place{
-        margin-bottom: 15px;
-    }
-    .release-tip{
-        color: #555555;
-        float: left;
-        padding-right: 5px;
-        height: 36px;
-        line-height: 36px;
-        font-size: 14px;
-    }
-    .release-idle-container-picture{
-        margin: 20px 0;
-
-    }
-    .release-idle-container-picture-title{
-        margin: 10px 0;
-        color: #555555;
-        font-size: 14px;
-    }
-    .picture-list {
-        margin: 20px 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
+.release-hero,
+.release-shell {
+    border-radius: var(--radius-xl);
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow);
+}
+.release-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    padding: 30px 32px;
+    margin-bottom: 24px;
+}
+.page-kicker { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); }
+.release-hero h1 { margin: 14px 0 10px; font-size: 38px; }
+.release-hero p { margin: 0; color: var(--text-soft); line-height: 1.7; max-width: 760px; }
+.release-side-note { color: var(--text-soft); max-width: 220px; text-align: right; }
+.release-shell { padding: 28px; }
+.release-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 24px; }
+.release-main-card,
+.release-side-card {
+    border-radius: var(--radius-lg);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 24px;
+}
+.release-card-title { font-size: 22px; font-weight: 800; margin-bottom: 18px; }
+.release-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+.release-field { margin-bottom: 18px; }
+.release-tip, .release-preview-title { color: var(--text-soft); font-size: 13px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.12em; }
+.wide-price :deep(.el-input-number) { width: 100%; }
+.picture-list { margin-top: 18px; }
+.release-submit-row { display: flex; justify-content: center; margin-top: 24px; }
+@media (max-width: 980px) { .release-grid { grid-template-columns: 1fr; } }
 </style>

@@ -1,17 +1,13 @@
-const webpack = require('webpack')
-
 module.exports = {
     publicPath: './',
     assetsDir: 'static',
     productionSourceMap: false,
-    configureWebpack: {
-        plugins: [
-            new webpack.ProvidePlugin({
-                $: "jquery",
-                jQuery: "jquery",
-                "windows.jQuery": "jquery"
-            })
-        ]
+    chainWebpack(config) {
+        ['prefetch', 'preload'].forEach(pluginName => {
+            if (config.plugins.has(pluginName)) {
+                config.plugins.delete(pluginName);
+            }
+        });
     },
     devServer: {
         port: 8081,

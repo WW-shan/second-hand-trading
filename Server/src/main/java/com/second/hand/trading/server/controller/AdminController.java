@@ -8,6 +8,7 @@ import com.second.hand.trading.server.service.AdminService;
 import com.second.hand.trading.server.service.IdleItemService;
 import com.second.hand.trading.server.service.OrderService;
 import com.second.hand.trading.server.service.UserService;
+import com.second.hand.trading.server.utils.PageUtils;
 import com.second.hand.trading.server.vo.ResultVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -61,14 +62,8 @@ public class AdminController {
         if(session.getAttribute("admin")==null){
             return ResultVo.fail(ErrorMsg.COOKIE_ERROR);
         }
-        int p=1;
-        int n=8;
-        if(null!=page){
-            p=page>0?page:1;
-        }
-        if(null!=nums){
-            n=nums>0?nums:8;
-        }
+        int p = PageUtils.resolvePage(page);
+        int n = PageUtils.resolvePageSize(nums);
         return ResultVo.success(adminService.getAdminList(p,n));
     }
 
@@ -92,14 +87,8 @@ public class AdminController {
         if(session.getAttribute("admin")==null){
             return ResultVo.fail(ErrorMsg.COOKIE_ERROR);
         }
-        int p=1;
-        int n=8;
-        if(null!=page){
-            p=page>0?page:1;
-        }
-        if(null!=nums){
-            n=nums>0?nums:8;
-        }
+        int p = PageUtils.resolvePage(page);
+        int n = PageUtils.resolvePageSize(nums);
         return ResultVo.success(idleItemService.adminGetIdleList(status,p,n));
     }
 
@@ -127,14 +116,8 @@ public class AdminController {
         if(session.getAttribute("admin")==null){
             return ResultVo.fail(ErrorMsg.COOKIE_ERROR);
         }
-        int p=1;
-        int n=8;
-        if(null!=page){
-            p=page>0?page:1;
-        }
-        if(null!=nums){
-            n=nums>0?nums:8;
-        }
+        int p = PageUtils.resolvePage(page);
+        int n = PageUtils.resolvePageSize(nums);
         return ResultVo.success(orderService.getAllOrder(p,n));
     }
 
@@ -158,14 +141,8 @@ public class AdminController {
         if(session.getAttribute("admin")==null){
             return ResultVo.fail(ErrorMsg.COOKIE_ERROR);
         }
-        int p=1;
-        int n=8;
-        if(null!=page){
-            p=page>0?page:1;
-        }
-        if(null!=nums){
-            n=nums>0?nums:8;
-        }
+        int p = PageUtils.resolvePage(page);
+        int n = PageUtils.resolvePageSize(nums);
         return ResultVo.success(userService.getUserByStatus(status,p,n));
     }
 

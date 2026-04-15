@@ -1,124 +1,211 @@
 <template>
-    <div>
+    <div class="message-page">
         <app-head></app-head>
         <app-body>
-            <div class="message-container">
-                <div class="message-container-title">我的消息</div>
-                <div v-for="(mes,index) in meslist" class="message-container-list" @click="toDetails(mes.idle.id)">
-                    <div class="message-container-list-left">
-                        <el-image
-                                style="width: 55px; height: 55px;border-radius: 5px;"
-                                :src="mes.fromU.avatar"
-                                fit="cover"></el-image>
-                        <div class="message-container-list-text">
-                            <div class="message-nickname">{{mes.fromU.nickname}}</div>
-                            <div class="message-content">{{mes.content}}</div>
-                            <div class="message-time">{{mes.createTime}}</div>
+            <section class="message-hero">
+                <div>
+                    <div class="page-kicker">Inbox Control</div>
+                    <h1>Keep every negotiation in one clean thread.</h1>
+                    <p>Review new buyer questions, jump back to the item page, and keep the resale flow moving without clutter.</p>
+                </div>
+                <div class="message-count">{{ meslist.length }} conversations</div>
+            </section>
+
+            <section class="message-shell">
+                <div v-if="meslist.length === 0" class="empty-state">No messages yet. Once buyers start reaching out, every thread will appear here.</div>
+
+                <article v-for="mes in meslist" :key="mes.id" class="message-card" @click="toDetails(mes.idle.id)">
+                    <div class="message-main">
+                        <el-image class="message-avatar" :src="mes.fromU.avatar" fit="cover"></el-image>
+                        <div class="message-copy">
+                            <div class="message-topline">
+                                <div>
+                                    <div class="message-author">{{ mes.fromU.nickname }}</div>
+                                    <div class="message-time">{{ mes.displayTime }}</div>
+                                </div>
+                                <div class="message-chip">Item Inquiry</div>
+                            </div>
+                            <div class="message-preview">{{ mes.contentPreview }}</div>
                         </div>
                     </div>
-                    <div class="message-container-list-right">
-                        <el-image
-                                style="width:130px; height: 90px;"
-                                :src="mes.idle.imgUrl"
-                                fit="contain"></el-image>
+                    <div class="message-item-card">
+                        <el-image class="message-item-image" :src="mes.idle.imgUrl" fit="cover"></el-image>
+                        <div class="message-item-copy">
+                            <div class="message-item-title">{{ mes.idle.idleName || 'Listing' }}</div>
+                            <div class="message-item-link">Open item details</div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                </article>
+            </section>
             <app-foot></app-foot>
         </app-body>
     </div>
 </template>
-
 <script>
-    import AppHead from '../common/AppHeader.vue';
-    import AppBody from '../common/AppPageBody.vue'
-    import AppFoot from '../common/AppFoot.vue'
+import AppHead from '../common/AppHeader.vue';
+import AppBody from '../common/AppPageBody.vue';
+import AppFoot from '../common/AppFoot.vue';
+import { firstPicture, formatDateTime } from '../../utils/idle';
 
-    export default {
-        name: "message",
-        components: {
-            AppHead,
-            AppBody,
-            AppFoot
-        },
-        data(){
-            return{
-                meslist:[]
-            };
-        },
-        created(){
-            this.$api.getAllMyMessage().then(res=>{
-                console.log(res);
-                if(res.status_code===1){
-                    for(let i=0;i<res.data.length;i++){
-                        let imgList=JSON.parse(res.data[i].idle.pictureList);
-                        res.data[i].idle.imgUrl=imgList?imgList[0]:'';
-                        let contentList=res.data[i].content.split('<br>');
-                        let contenHtml=contentList[0];
-                        for(let i=1;i<contentList.length;i++){
-                            contenHtml+='  '+contentList[i];
+export default {
+    name: 'message',
+    components: { AppHead, AppBody, AppFoot },
+    data() {
+        return { meslist: [] };
+    },
+    created() {
+        this.$api.getAllMyMessage().then(res => {
+            if (res.status_code === 1) {
+                this.meslist = res.data.map(item => {
+                    const preview = item.content.split('<br>').join(' ').trim();
+                    return {
+                        ...item,
+                        contentPreview: preview,
+                        displayTime: formatDateTime(item.createTime),
+                        idle: {
+                            ...item.idle,
+                            imgUrl: firstPicture(item.idle.pictureList)
                         }
-                        res.data[i].content=contenHtml;
-                    }
-                    this.meslist=res.data;
-                }
-            })
-        },
-        methods:{
-            toDetails(id){
-                this.$router.push({path: '/details',query:{id:id}});
+                    };
+                });
             }
-        }
+        });
+    },
+    methods: {
+        toDetails(id) { this.$router.push({ path: '/details', query: { id } }); }
     }
+};
 </script>
-
 <style scoped>
-    .message-container{
-        min-height: 85vh;
-        padding: 0 20px;
+.message-page { color: var(--text); }
+.message-hero,
+.message-shell {
+    border-radius: var(--radius-xl);
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow);
+}
+.message-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 30px 32px;
+    margin-bottom: 24px;
+}
+.page-kicker {
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+.message-hero h1 { margin: 14px 0 10px; font-size: 38px; }
+.message-hero p { margin: 0; color: var(--text-soft); line-height: 1.7; max-width: 760px; }
+.message-count {
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-weight: 800;
+    white-space: nowrap;
+}
+.message-shell { padding: 24px 28px; }
+.empty-state {
+    padding: 42px 10px;
+    text-align: center;
+    color: var(--text-soft);
+}
+.message-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 18px;
+    padding: 18px 0;
+    cursor: pointer;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    transition: transform .24s ease;
+}
+.message-card:first-of-type { border-top: none; }
+.message-card:hover { transform: translateY(-3px); }
+.message-main {
+    display: flex;
+    gap: 14px;
+    min-width: 0;
+}
+.message-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.message-copy { min-width: 0; flex: 1; }
+.message-topline {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+.message-author { font-size: 18px; font-weight: 800; }
+.message-time { margin-top: 6px; color: var(--text-soft); font-size: 13px; }
+.message-chip {
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(0,221,255,0.1);
+    border: 1px solid rgba(0,221,255,0.16);
+    font-size: 12px;
+    font-weight: 700;
+    color: #dffbff;
+    white-space: nowrap;
+}
+.message-preview {
+    color: rgba(255,255,255,0.82);
+    line-height: 1.8;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.message-item-card {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 14px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+}
+.message-item-image {
+    width: 92px;
+    height: 92px;
+    border-radius: 16px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.message-item-copy { min-width: 0; }
+.message-item-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+.message-item-link {
+    color: var(--accent);
+    font-size: 13px;
+}
+@media (max-width: 980px) {
+    .message-hero {
+        flex-direction: column;
+        align-items: flex-start;
     }
-    .message-container-title{
-        font-size: 16px;
-        padding: 20px 0;
-        font-weight: 600;
+
+    .message-card {
+        grid-template-columns: 1fr;
     }
-    .message-container-list{
-        cursor:pointer;
-        height: 110px;
-        border-top: 1px solid #eeeeee;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+
+    .message-topline {
+        flex-direction: column;
+        align-items: flex-start;
     }
-    .message-container-list-left{
-        width: 800px;
-        display: flex;
-    }
-    .message-container-list-right{
-        width: 130px;
-    }
-    .message-container-list-text{
-        margin-left: 10px;
-    }
-    .message-nickname{
-        font-weight: 600;
-        font-size: 18px;
-        padding-bottom: 5px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-    }
-    .message-content{
-        font-size: 16px;
-        padding-bottom: 15px;
-        color: #555555;
-        width: 710px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-    }
-    .message-time{
-        font-size: 13px;
-        color: #555555;
-    }
+}
 </style>

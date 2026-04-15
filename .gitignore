@@ -32,9 +32,18 @@ gen
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
-*.mvn
-*mvnw
-*mvnw.cmd
-
-userFile
+# keep demo images versioned for deployment
 target
+deploy-data
+backups
+tmp-*.log
+tmp-*.ini
+run-logs
+deploy/certs/*.pem
+deploy/certs/*.key
+deploy/certs/*.crt
+deploy/certs/*.csr
+deploy/certs/*.conf
+deploy/certbot/etc
+deploy/certbot/lib
+deploy/certbot/log

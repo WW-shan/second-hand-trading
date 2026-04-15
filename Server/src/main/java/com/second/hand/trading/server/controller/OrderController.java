@@ -4,7 +4,6 @@ import com.second.hand.trading.server.enums.ErrorMsg;
 import com.second.hand.trading.server.model.OrderModel;
 import com.second.hand.trading.server.service.OrderService;
 import com.second.hand.trading.server.utils.IdFactoryUtil;
-import com.second.hand.trading.server.utils.OrderTaskHandler;
 import com.second.hand.trading.server.vo.ResultVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -29,9 +28,6 @@ public class OrderController {
                              @NotNull(message = "登录异常 请重新登录")
                              @NotEmpty(message = "登录异常 请重新登录") String shUserId,
                              @RequestBody OrderModel orderModel){
-        if(OrderTaskHandler.orderService==null){
-            OrderTaskHandler.orderService=orderService;
-        }
         orderModel.setOrderNumber(IdFactoryUtil.getOrderId());
         orderModel.setCreateTime(new Date());
         orderModel.setUserId(Long.valueOf(shUserId));

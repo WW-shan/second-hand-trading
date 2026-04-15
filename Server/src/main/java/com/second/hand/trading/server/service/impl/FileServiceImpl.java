@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 /**
  * @author myl
@@ -20,14 +21,14 @@ public class FileServiceImpl implements FileService {
     private String userFilePath;
 
     public boolean uploadFile(MultipartFile multipartFile,String fileName)throws IOException {
-        File fileDir = new File(userFilePath);
+        File fileDir = Paths.get(userFilePath).toAbsolutePath().normalize().toFile();
         if (!fileDir.exists()) {
             if (!fileDir.mkdirs()) {
                 return false;
             }
         }
 //        System.out.println(fileDir.getAbsolutePath() +"/"+fileName);
-        File file = new File(fileDir.getAbsolutePath() +"/"+fileName);
+        File file = new File(fileDir, fileName);
         if (file.exists()) {
             if (!file.delete()) {
                 return false;

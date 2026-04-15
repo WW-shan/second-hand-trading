@@ -30,18 +30,13 @@ public class OrderTask implements Delayed {
 
     @Override
     public long getDelay(TimeUnit unit) {
-        return time - System.currentTimeMillis();
+        return unit.convert(time - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override
     public int compareTo(Delayed o) {
-        OrderTask Order = (OrderTask) o;
-        long diff = this.time - Order.time;
-        if (diff <= 0) {
-            return -1;
-        } else {
-            return 1;
-        }
+        OrderTask orderTask = (OrderTask) o;
+        return Long.compare(this.time, orderTask.time);
     }
 
     public long getTime() {

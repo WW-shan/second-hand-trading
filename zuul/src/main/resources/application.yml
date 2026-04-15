@@ -5,5 +5,3 @@ eureka:
 spring:
   application:
     name: service-zuul
-zuul:
-  routes:

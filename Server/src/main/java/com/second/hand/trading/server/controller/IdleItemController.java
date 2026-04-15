@@ -3,6 +3,7 @@ package com.second.hand.trading.server.controller;
 import com.second.hand.trading.server.enums.ErrorMsg;
 import com.second.hand.trading.server.model.IdleItemModel;
 import com.second.hand.trading.server.service.IdleItemService;
+import com.second.hand.trading.server.utils.PageUtils;
 import com.second.hand.trading.server.vo.ResultVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -55,14 +56,8 @@ public class IdleItemController {
         if(null==findValue){
             findValue="";
         }
-        int p=1;
-        int n=8;
-        if(null!=page){
-            p=page>0?page:1;
-        }
-        if(null!=nums){
-            n=nums>0?nums:8;
-        }
+        int p = PageUtils.resolvePage(page);
+        int n = PageUtils.resolvePageSize(nums);
         return ResultVo.success(idleItemService.findIdleItem(findValue,p,n));
     }
 
@@ -70,14 +65,8 @@ public class IdleItemController {
     public ResultVo findIdleItemByLable(@RequestParam(value = "idleLabel",required = true) Integer idleLabel,
                                  @RequestParam(value = "page",required = false) Integer page,
                                  @RequestParam(value = "nums",required = false) Integer nums){
-        int p=1;
-        int n=8;
-        if(null!=page){
-            p=page>0?page:1;
-        }
-        if(null!=nums){
-            n=nums>0?nums:8;
-        }
+        int p = PageUtils.resolvePage(page);
+        int n = PageUtils.resolvePageSize(nums);
         return ResultVo.success(idleItemService.findIdleItemByLable(idleLabel,p,n));
     }
 

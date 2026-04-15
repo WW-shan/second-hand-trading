@@ -11,13 +11,12 @@
     "axios": "^0.18.0",
     "element-ui": "^2.11.0",
     "vue": "^2.6.10",
-    "vue-router": "^3.0.3",
-    "jquery": "^3.4.1",
-    "babel-polyfill": "^6.26.0"
+    "vue-router": "^3.0.3"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.9.0",
     "@vue/cli-service": "^3.9.0",
+    "babel-plugin-component": "^1.1.1",
     "vue-template-compiler": "^2.6.10"
   }
 }
