@@ -54,8 +54,30 @@ PROBE_TOKEN="acme-probe-$(date +%s)"
 PROBE_FILE="deploy/certbot/www/.well-known/acme-challenge/${PROBE_TOKEN}"
 printf '%s' "${PROBE_TOKEN}" > "${PROBE_FILE}"
 
+retry_probe() {
+  local description="$1"
+  local command="$2"
+  local expected="$3"
+  local retries="${4:-15}"
+  local delay="${5:-2}"
+  local response=""
+
+  for attempt in $(seq 1 "${retries}"); do
+    response="$(eval "${command}" || true)"
+    if [[ "${response}" == "${expected}" ]]; then
+      printf '%s\n' "${response}"
+      return 0
+    fi
+    sleep "${delay}"
+  done
+
+  printf '%s\n' "${response}"
+  return 1
+}
+
 echo "Checking ACME challenge path inside local nginx..."
-LOCAL_PROBE_RESPONSE="$(curl -fsSL --max-time 15 -H "Host: ${DOMAIN_NAME}" "http://127.0.0.1/.well-known/acme-challenge/${PROBE_TOKEN}" || true)"
+LOCAL_PROBE_CMD="curl -fsSL --max-time 15 -H 'Host: ${DOMAIN_NAME}' 'http://127.0.0.1/.well-known/acme-challenge/${PROBE_TOKEN}'"
+LOCAL_PROBE_RESPONSE="$(retry_probe "local nginx" "${LOCAL_PROBE_CMD}" "${PROBE_TOKEN}" 20 2 || true)"
 if [[ "${LOCAL_PROBE_RESPONSE}" != "${PROBE_TOKEN}" ]]; then
   echo "Local ACME nginx preflight failed."
   echo "Expected challenge response '${PROBE_TOKEN}', got:"
@@ -69,7 +91,8 @@ if [[ "${LOCAL_PROBE_RESPONSE}" != "${PROBE_TOKEN}" ]]; then
 fi
 
 echo "Checking ACME challenge path through public DNS (IPv4)..."
-PUBLIC_PROBE_RESPONSE="$(curl -4 -fsSL --max-time 15 "http://${DOMAIN_NAME}/.well-known/acme-challenge/${PROBE_TOKEN}" || true)"
+PUBLIC_PROBE_CMD="curl -4 -fsSL --max-time 15 'http://${DOMAIN_NAME}/.well-known/acme-challenge/${PROBE_TOKEN}'"
+PUBLIC_PROBE_RESPONSE="$(retry_probe "public dns" "${PUBLIC_PROBE_CMD}" "${PROBE_TOKEN}" 10 3 || true)"
 if [[ "${PUBLIC_PROBE_RESPONSE}" != "${PROBE_TOKEN}" ]]; then
   echo "Public ACME preflight failed."
   echo "Expected challenge response '${PROBE_TOKEN}', got:"
