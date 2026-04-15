@@ -28,6 +28,7 @@ if [[ "${DOMAIN_NAME}" == "example.com" || "${CERTBOT_EMAIL}" == "admin@example.
 fi
 
 mkdir -p deploy/certbot/etc deploy/certbot/lib deploy/certbot/log deploy/certbot/www deploy/certs
+mkdir -p deploy/certbot/www/.well-known/acme-challenge
 
 DOMAINS_CSV="${CERTBOT_DOMAINS:-${DOMAIN_NAME}}"
 IFS=',' read -r -a DOMAIN_ARRAY <<< "${DOMAINS_CSV}"
@@ -47,6 +48,26 @@ fi
 
 echo "Starting HTTP stack for ACME challenge..."
 docker compose up -d mysql server web
+
+PROBE_TOKEN="acme-probe-$(date +%s)"
+PROBE_FILE="deploy/certbot/www/.well-known/acme-challenge/${PROBE_TOKEN}"
+printf '%s' "${PROBE_TOKEN}" > "${PROBE_FILE}"
+
+echo "Checking ACME challenge path before requesting certificate..."
+PROBE_RESPONSE="$(curl -fsSL --max-time 15 "http://${DOMAIN_NAME}/.well-known/acme-challenge/${PROBE_TOKEN}" || true)"
+if [[ "${PROBE_RESPONSE}" != "${PROBE_TOKEN}" ]]; then
+  echo "ACME preflight failed."
+  echo "Expected challenge response '${PROBE_TOKEN}', got:"
+  printf '%s\n' "${PROBE_RESPONSE}"
+  echo
+  echo "Check:"
+  echo "  1) domain DNS points to this server"
+  echo "  2) port 80 is open"
+  echo "  3) nginx is serving /.well-known/acme-challenge/ from deploy/certbot/www"
+  rm -f "${PROBE_FILE}"
+  exit 1
+fi
+rm -f "${PROBE_FILE}"
 
 echo "Requesting Let's Encrypt certificate for: ${DOMAINS_CSV}"
 docker run --rm \
