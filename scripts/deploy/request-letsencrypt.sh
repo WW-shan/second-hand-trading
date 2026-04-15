@@ -22,6 +22,11 @@ if [[ -z "${DOMAIN_NAME}" || -z "${CERTBOT_EMAIL}" ]]; then
   exit 1
 fi
 
+if [[ "${DOMAIN_NAME}" == "example.com" || "${CERTBOT_EMAIL}" == "admin@example.com" ]]; then
+  echo "Please replace DOMAIN_NAME and CERTBOT_EMAIL in .env with real values before requesting Let's Encrypt certificates."
+  exit 1
+fi
+
 mkdir -p deploy/certbot/etc deploy/certbot/lib deploy/certbot/log deploy/certbot/www deploy/certs
 
 DOMAINS_CSV="${CERTBOT_DOMAINS:-${DOMAIN_NAME}}"
@@ -50,6 +55,7 @@ docker run --rm \
   -v "${REPO_ROOT}/deploy/certbot/log:/var/log/letsencrypt" \
   -v "${REPO_ROOT}/deploy/certbot/www:/var/www/certbot" \
   certbot/certbot certonly \
+  --non-interactive \
   --webroot \
   --webroot-path /var/www/certbot \
   --email "${CERTBOT_EMAIL}" \

@@ -44,6 +44,16 @@ validate_passwords() {
   fi
 }
 
+validate_https_env() {
+  if is_https_mode; then
+    if [[ "${DOMAIN_NAME:-}" == "example.com" || "${CERTBOT_EMAIL:-}" == "admin@example.com" ]]; then
+      echo "HTTPS mode is enabled, but DOMAIN_NAME / CERTBOT_EMAIL in .env are still placeholder values."
+      echo "Please update .env first."
+      exit 1
+    fi
+  fi
+}
+
 is_https_mode() {
   [[ "${PUBLIC_BASE_URL:-}" == https://* ]]
 }
@@ -77,6 +87,7 @@ main() {
   ensure_env
   load_env
   validate_passwords
+  validate_https_env
 
   if is_https_mode; then
     deploy_https
